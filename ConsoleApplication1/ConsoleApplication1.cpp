@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <fstream>
+#include <vector>
 using namespace std;
 
 struct Pipe
@@ -72,40 +73,152 @@ void ShowMenu()
 		<< "5. Edit CS" << "\n"
 		<< "6. Save" << "\n"
 		<< "7. Load" << "\n"
-		<< "0. Exit" << "\n";
+		<< "8. Exit" << "\n";
 }
 
-void PrintPipeInfo(const Pipe& pipe)
+istream& operator >> (istream& in, Compress_station& new_cs)
+{
+	cout << "Type name: ";
+	cin >> new_cs.name;
+	cout << "Type shops amount: ";
+	cin >> new_cs.shops_num;
+	while (cin.fail() || new_cs.shops_num <= 0)
+	{
+		cin.clear();
+		cin.ignore(int(pow(10, 6)), '\n');
+		cout << "Type correct info (>0): ";
+		cin >> new_cs.shops_num;
+	}
+	cout << "Type efficiency: ";
+	cin >> new_cs.efficiency;
+	while (cin.fail())
+	{
+		cin.clear();
+		cin.ignore(int(pow(10, 6)), '\n');
+		cout << "Type correct info: ";
+		cin >> new_cs.efficiency;
+	}
+	return in;
+}
+
+ostream& operator << (ostream& out, const Compress_station& cs)
+{
+	out << "--------" << "\n"
+		<< "CS Name: " << cs.name << "\n"
+		<< "Overall shops: " << cs.shops_num << "\n"
+		<< "Busy shops: " << cs.busy_shops_num << "\n"
+		<< "Efficiency: " << cs.efficiency << "\n";
+	return out;
+}
+
+istream& operator >> (istream& in, Pipe& new_pipe)
+{
+	cout << "Type name: ";
+	cin >> new_pipe.name;
+	cout << "Type length: ";
+	cin >> new_pipe.length;
+	while (cin.fail() || new_pipe.length <= 0)
+	{
+		cin.clear();
+		cin.ignore(int(pow(10, 6)), '\n');
+		cout << "Type correct info (>0): ";
+		cin >> new_pipe.length;
+	}
+	cout << "Type diameter:";
+	cin >> new_pipe.diameter;
+	while (cin.fail() || new_pipe.diameter <= 0)
+	{
+		cin.clear();
+		cin.ignore(int(pow(10, 6)), '\n');
+		cout << "Type correct info (>0): ";
+		cin >> new_pipe.diameter;
+	}
+	return in;
+}
+
+ostream& operator << (ostream& out, const Pipe& pipe)
 {
 	string repair_status = "False";
 	if (pipe.is_repairing)
 	{
 		repair_status = "True";
 	}
-	cout << "--------" << "\n"
+	out << "--------" << "\n"
 		<< "Pipe Name: " << pipe.name << "\n"
 		<< "Pipe length: " << pipe.length << "\n"
 		<< "Pipe diameter: " << pipe.diameter << "\n"
 		<< "Is Reapairing: " << repair_status << "\n";
+	return out;
 }
 
 int main()
 {
+	vector <Pipe> pipes;
+	vector <Compress_station> stations;
 	while (1) {
 		ShowMenu();
 		int action = 0;
+		cout << "Type number (1-8): ";
 		cin >> action;
 		switch (action)
 		{
 		case 1:
 		{
-			CreatePipe();
+			Pipe new_pipe;
+			cin >> new_pipe;
+			bool name_exists = false;
+			for (Pipe pipe : pipes) {
+				if (pipe.name == new_pipe.name) {
+					cout << "Name already exists!\n";
+					name_exists = true;
+					break;
+				}
+			}
+			if (!name_exists) {
+				pipes.push_back(new_pipe);
+			}
 			break;
 		}
 		case 2:
 		{
-			CreateCS();
+			Compress_station new_cs;
+			cin >> new_cs;
+			bool name_exists = false;
+			for (Compress_station cs : stations) {
+				if (cs.name == new_cs.name) {
+					cout << "Name already exists!\n";
+					name_exists = true;
+					break;
+				}
+			}
+			if (!name_exists) {
+				stations.push_back(new_cs);
+			}
 			break;
+		}
+		case 3:
+		{
+			cout << "Pipes:\n";
+				for (Pipe pipe : pipes) {
+					cout << pipe;
+				}
+				cout << "----------\n"
+				<< "Compress Stations:\n";
+				for (Compress_station cs : stations) {
+					cout << cs;
+				}
+				cout << "\n";
+				break;
+		}
+		case 8:
+		{
+			return 0;
+		}
+		default:
+		{
+			cout << "Wrong action!\n";
+			cin.clear();
+			cin.ignore(int(pow(10, 6)), '\n');
 		}
 		}
 
