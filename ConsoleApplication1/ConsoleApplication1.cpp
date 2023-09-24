@@ -76,6 +76,28 @@ void ShowMenu()
 		<< "8. Exit" << "\n";
 }
 
+void ChangePipeStatus(vector<Pipe>& pipes, string pipe_name)
+{
+	bool name_exists = false;
+	int ind = -1;
+	for (Pipe pipe : pipes) {
+		ind++;
+		if (pipe.name == pipe_name) {
+			name_exists = true;
+			if (pipe.is_repairing) {
+				pipe.is_repairing = false;
+				break;
+			}
+			pipe.is_repairing = true;
+			pipes[ind] = pipe;
+		}
+	}
+	if (!name_exists) {
+		cout << "Wrong name! Try again.\n";
+	}
+	cout << "Status Changed!\n";
+}
+
 istream& operator >> (istream& in, Compress_station& new_cs)
 {
 	cout << "Type name: ";
@@ -124,7 +146,7 @@ istream& operator >> (istream& in, Pipe& new_pipe)
 		cout << "Type correct info (>0): ";
 		cin >> new_pipe.length;
 	}
-	cout << "Type diameter:";
+	cout << "Type diameter: ";
 	cin >> new_pipe.diameter;
 	while (cin.fail() || new_pipe.diameter <= 0)
 	{
@@ -209,6 +231,15 @@ int main()
 				}
 				cout << "\n";
 				break;
+		}
+		case 4:
+		{
+			string pipe_name = "";
+			cout << "Type pipe name: ";
+			cin >> pipe_name;
+			ChangePipeStatus(pipes, pipe_name);
+			break;
+
 		}
 		case 8:
 		{
