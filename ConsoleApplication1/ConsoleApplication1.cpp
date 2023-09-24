@@ -90,12 +90,54 @@ void ChangePipeStatus(vector<Pipe>& pipes, string pipe_name)
 			}
 			pipe.is_repairing = true;
 			pipes[ind] = pipe;
+			break;
 		}
 	}
 	if (!name_exists) {
 		cout << "Wrong name! Try again.\n";
 	}
 	cout << "Status Changed!\n";
+}
+
+void EditShops(vector<Compress_station>& stations, string cs_name, bool action, int shops_num)
+{
+	bool name_exists = false;
+	bool num_correct = false;
+	int ind = -1;
+	for (Compress_station cs : stations) {
+		ind++;
+		if (cs.name == cs_name) {
+			name_exists = true;
+			if (action) {
+				if (shops_num <= cs.shops_num - cs.busy_shops_num)
+				{
+					cs.busy_shops_num += shops_num;
+					num_correct = true;
+					stations[ind] = cs;
+					cout << "Status Changed!\n";
+				}
+				break;
+			}
+			else {
+				if (shops_num <= cs.busy_shops_num)
+				{
+					cs.busy_shops_num -= shops_num;
+					num_correct = true;
+					stations[ind] = cs;
+					cout << "Status Changed!\n";
+				}
+				break;
+			}
+		}
+	}
+	if (!name_exists) {
+		cout << "Wrong name! Try again.\n";
+		return;
+	}
+
+	if (!num_correct) {
+		cout << "Invalid shops amount! Try again. \n";
+	}
 }
 
 istream& operator >> (istream& in, Compress_station& new_cs)
@@ -125,11 +167,12 @@ istream& operator >> (istream& in, Compress_station& new_cs)
 
 ostream& operator << (ostream& out, const Compress_station& cs)
 {
-	out << "--------" << "\n"
+	out
 		<< "CS Name: " << cs.name << "\n"
 		<< "Overall shops: " << cs.shops_num << "\n"
 		<< "Busy shops: " << cs.busy_shops_num << "\n"
-		<< "Efficiency: " << cs.efficiency << "\n";
+		<< "Efficiency: " << cs.efficiency << "\n"
+		<< "--------" << "\n";
 	return out;
 }
 
@@ -165,11 +208,12 @@ ostream& operator << (ostream& out, const Pipe& pipe)
 	{
 		repair_status = "True";
 	}
-	out << "--------" << "\n"
+	out
 		<< "Pipe Name: " << pipe.name << "\n"
 		<< "Pipe length: " << pipe.length << "\n"
 		<< "Pipe diameter: " << pipe.diameter << "\n"
-		<< "Is Reapairing: " << repair_status << "\n";
+		<< "Is Reapairing: " << repair_status << "\n"
+		<< "--------" << "\n";
 	return out;
 }
 
@@ -220,12 +264,11 @@ int main()
 		}
 		case 3:
 		{
-			cout << "Pipes:\n";
+			cout << "Pipes:\n\n";
 				for (Pipe pipe : pipes) {
 					cout << pipe;
 				}
-				cout << "----------\n"
-				<< "Compress Stations:\n";
+				cout << "Compress Stations:\n\n";
 				for (Compress_station cs : stations) {
 					cout << cs;
 				}
@@ -240,6 +283,38 @@ int main()
 			ChangePipeStatus(pipes, pipe_name);
 			break;
 
+		}
+		case 5:
+		{
+			string cs_name = "";
+			string action = "";
+			int shops_num = 0;
+			cout << "Type station name: ";
+			cin >> cs_name;
+			cout << "Type action (activate/disable): ";
+			cin >> action;
+			while (action != "activate" && action != "disable")
+			{
+				cin.clear();
+				cin.ignore(int(pow(10, 6)), '\n');
+				cout << "Type correct acton: ";
+				cin >> action;
+			}
+			cout << "Type amount of shops you want to edit: ";
+			cin >> shops_num;
+			while (cin.fail() || shops_num <= 0)
+			{
+				cin.clear();
+				cin.ignore(int(pow(10, 6)), '\n');
+				cout << "Type correct info: ";
+				cin >> shops_num;
+			}
+			if (action == "activate") {
+				EditShops(stations, cs_name, true, shops_num);
+				break;
+			}
+			EditShops(stations, cs_name, false, shops_num);
+			break;
 		}
 		case 8:
 		{
