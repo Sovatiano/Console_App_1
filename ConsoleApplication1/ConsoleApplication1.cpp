@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <string>
 #include <fstream>
 #include <vector>
 using namespace std;
@@ -7,7 +8,7 @@ struct Pipe
 {
 	string name;
 	double length = 0;
-	double diameter = 0;
+	int diameter = 0;
 	bool is_repairing = false;
 };
 
@@ -23,7 +24,10 @@ Pipe CreatePipe()
 {
 	Pipe new_pipe;
 	cout << "Type name: ";
-	cin >> new_pipe.name;
+	cin.ignore(1, '\n');
+	string name;
+	getline(cin, name);
+	new_pipe.name = name;
 	cout << "Type length: ";
 	cin >> new_pipe.length;
 	while (cin.fail() || new_pipe.length <= 0)
@@ -95,6 +99,7 @@ void ChangePipeStatus(vector<Pipe>& pipes, string pipe_name)
 	}
 	if (!name_exists) {
 		cout << "Wrong name! Try again.\n";
+		return;
 	}
 	cout << "Status Changed!\n";
 }
@@ -153,15 +158,21 @@ void SaveCS(ofstream& fout, const Compress_station& cs)
 	fout << cs.name << "\n"
 		<< cs.shops_num << "\n"
 		<< cs.busy_shops_num << "\n"
-		<< cs.efficiency << "\n";
+		<< cs.efficiency;
 }
 
 Pipe LoadPipe(ifstream& fin, string pipe_name) {
 	Pipe pipe;
 	pipe.name = pipe_name;
-	fin >> pipe.length;
-	fin >> pipe.diameter;
-	fin >> pipe.is_repairing;
+	string pipe_length;
+	getline(fin, pipe_length);
+	pipe.length = stof(pipe_length);
+	string pipe_diameter;
+	getline(fin, pipe_diameter);
+	pipe.diameter = stoi(pipe_diameter);
+	string pipe_status;
+	getline(fin, pipe_status);
+	pipe.diameter = stoi(pipe_status);
 	return pipe;
 }
 
@@ -177,7 +188,10 @@ Compress_station LoadStation(ifstream& fin) {
 istream& operator >> (istream& in, Compress_station& new_cs)
 {
 	cout << "Type name: ";
-	cin >> new_cs.name;
+	cin.ignore(1, '\n');
+	string name;
+	getline(cin, name);
+	new_cs.name = name;
 	cout << "Type shops amount: ";
 	cin >> new_cs.shops_num;
 	while (cin.fail() || new_cs.shops_num <= 0)
@@ -213,7 +227,10 @@ ostream& operator << (ostream& out, const Compress_station& cs)
 istream& operator >> (istream& in, Pipe& new_pipe)
 {
 	cout << "Type name: ";
-	cin >> new_pipe.name;
+	cin.ignore(1, '\n');
+	string name;
+	getline(cin, name);
+	new_pipe.name = name;
 	cout << "Type length: ";
 	cin >> new_pipe.length;
 	while (cin.fail() || new_pipe.length <= 0)
@@ -380,7 +397,7 @@ int main()
 			if (fin.is_open()) {
 				while (1) {
 					string str;
-					fin >> str;
+					getline(fin, str);
 					if (str != "Pipes:" && str != "CompressStations:" && str != "") {
 						pipes.push_back(LoadPipe(fin, str));
 					}
