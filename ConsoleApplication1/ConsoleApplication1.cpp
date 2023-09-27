@@ -150,7 +150,7 @@ void SavePipe(ofstream& fout, const Pipe& pipe)
 	fout << pipe.name << "\n"
 		<< pipe.length << "\n"
 		<< pipe.diameter << "\n"
-		<< pipe.is_repairing << "\n";
+		<< pipe.is_repairing;
 }
 
 void SaveCS(ofstream& fout, const Compress_station& cs)
@@ -159,6 +159,12 @@ void SaveCS(ofstream& fout, const Compress_station& cs)
 		<< cs.shops_num << "\n"
 		<< cs.busy_shops_num << "\n"
 		<< cs.efficiency;
+}
+
+bool is_number(const std::string& s)
+{
+	return !s.empty() && std::find_if(s.begin(),
+		s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
 }
 
 Pipe LoadPipe(ifstream& fin, string pipe_name) {
@@ -193,23 +199,27 @@ istream& operator >> (istream& in, Compress_station& new_cs)
 	getline(cin, name);
 	new_cs.name = name;
 	cout << "Type shops amount: ";
-	cin >> new_cs.shops_num;
-	while (cin.fail() || new_cs.shops_num <= 0)
+	string shops_num;
+	cin >> shops_num;
+	while (!is_number(shops_num) || stoi(shops_num) <= 0)
 	{
 		cin.clear();
 		cin.ignore(int(pow(10, 6)), '\n');
 		cout << "Type correct info (>0): ";
-		cin >> new_cs.shops_num;
+		cin >> shops_num;
 	}
+	new_cs.shops_num = stoi(shops_num);
 	cout << "Type efficiency: ";
-	cin >> new_cs.efficiency;
-	while (cin.fail())
+	string efficiency;
+	cin >> efficiency;
+	while (!is_number(efficiency) || stoi(efficiency) <= 0)
 	{
 		cin.clear();
 		cin.ignore(int(pow(10, 6)), '\n');
-		cout << "Type correct info: ";
-		cin >> new_cs.efficiency;
+		cout << "Type correct info (>0): ";
+		cin >> efficiency;
 	}
+	new_cs.efficiency = stoi(efficiency);
 	return in;
 }
 
@@ -274,10 +284,14 @@ int main()
 	vector <Compress_station> stations;
 	while (1) {
 		ShowMenu();
-		int action = 0;
+		string action = "";
 		cout << "Type number (1-8): ";
 		cin >> action;
-		switch (action)
+		while (!is_number(action)) {
+			cout << "Wrong action, type again: ";
+			cin >> action;
+		}
+		switch (stoi(action))
 		{
 		case 1:
 		{
@@ -379,7 +393,7 @@ int main()
 					SavePipe(fout, pipe);
 				}
 			}
-			fout << "CompressStations:\n";
+			fout << "CompressStations:";
 			if (fout.is_open())
 			{
 				for (Compress_station cs : stations)
@@ -394,14 +408,20 @@ int main()
 		{
 			ifstream fin;
 			fin.open("data.txt", ios::in);
+			bool stations_part = false;
+			pipes.clear();
+			stations.clear();
 			if (fin.is_open()) {
 				while (1) {
 					string str;
 					getline(fin, str);
-					if (str != "Pipes:" && str != "CompressStations:" && str != "") {
+					if (str != "Pipes:" && str != "CompressStations:" && str != "" && !stations_part) {
 						pipes.push_back(LoadPipe(fin, str));
 					}
-					else if (str == "CompressStations:") {
+					else if (str == "CompressStations:" ) {
+						stations_part = true;
+					}
+					else if (stations_part && str != "") {
 						stations.push_back(LoadStation(fin));
 					}
 					if (str == "") {
