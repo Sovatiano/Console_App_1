@@ -161,6 +161,25 @@ void SaveCS(ofstream& fout, const Compress_station& cs)
 		<< cs.efficiency;
 }
 
+bool is_digit(const std::string& s)
+{
+	for (int ind = 0; ind < s.length(); ind++)
+	{
+		if (ind == 0) {
+			if (!isdigit(s[ind])) {
+				return false;
+			}
+
+		}
+		else {
+			if (!isdigit(s[ind]) && s[ind] != '.') {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 bool is_number(const std::string& s)
 {
 	return !s.empty() && std::find_if(s.begin(),
@@ -242,23 +261,27 @@ istream& operator >> (istream& in, Pipe& new_pipe)
 	getline(cin, name);
 	new_pipe.name = name;
 	cout << "Type length: ";
-	cin >> new_pipe.length;
-	while (cin.fail() || new_pipe.length <= 0)
+	string length;
+	getline(cin, length);
+	while (!is_digit(length) || stof(length) <= 0)
 	{
 		cin.clear();
 		cin.ignore(int(pow(10, 6)), '\n');
 		cout << "Type correct info (>0): ";
-		cin >> new_pipe.length;
+		getline(cin, length);
 	}
+	new_pipe.length = stof(length);
 	cout << "Type diameter: ";
-	cin >> new_pipe.diameter;
-	while (cin.fail() || new_pipe.diameter <= 0)
+	string diameter;
+	getline(cin, diameter);
+	while (!is_number(diameter) || stoi(diameter) <= 0)
 	{
 		cin.clear();
 		cin.ignore(int(pow(10, 6)), '\n');
 		cout << "Type correct info (>0): ";
-		cin >> new_pipe.diameter;
+		cin >> diameter;
 	}
+	new_pipe.diameter = stoi(diameter);
 	return in;
 }
 
@@ -286,10 +309,10 @@ int main()
 		ShowMenu();
 		string action = "";
 		cout << "Type number (1-8): ";
-		cin >> action;
-		while (!is_number(action)) {
+		getline(cin, action);
+		while (!is_number(action) && action != "") {
 			cout << "Wrong action, type again: ";
-			cin >> action;
+			getline(cin, action);
 		}
 		switch (stoi(action))
 		{
