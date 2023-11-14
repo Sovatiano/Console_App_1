@@ -142,7 +142,7 @@ void EditShops(vector<Compress_station>& stations, string cs_name, bool action, 
 					cs.busy_shops_num += shops_num;
 					num_correct = true;
 					stations[ind] = cs;
-					WriteLog("Пользователь изменил КС", cs_name);
+					WriteLog("User edited CS", cs_name);
 					cout << "Status Changed!\n";
 				}
 				break;
@@ -153,7 +153,7 @@ void EditShops(vector<Compress_station>& stations, string cs_name, bool action, 
 					cs.busy_shops_num -= shops_num;
 					num_correct = true;
 					stations[ind] = cs;
-					WriteLog("Пользователь изменил КС", cs_name);
+					WriteLog("User edited CS", cs_name);
 					cout << "Status Changed!\n";
 				}
 				break;
@@ -388,8 +388,17 @@ void EditCS(vector<Compress_station> &stations) {
 }
 
 void SaveAll(vector<Compress_station>& stations, vector<Pipe>& pipes) {
+	string file_name;
+	cout << "Type save file name:";
+	getline(cin, file_name);
+	while (file_name == "")
+	{
+		cin.clear();
+		cout << "Type correct name: ";
+		getline(cin, file_name);
+	}
 	ofstream fout;
-	fout.open("data.txt", ios::out);
+	fout.open(file_name, ios::out);
 	fout << "Pipes:\n";
 	if (fout.is_open())
 	{
@@ -407,11 +416,22 @@ void SaveAll(vector<Compress_station>& stations, vector<Pipe>& pipes) {
 		}
 	}
 	fout.close();
+	WriteLog("User saved to file", file_name);
 }
 
 void LoadAll(vector<Compress_station>& stations, vector<Pipe>& pipes) {
+	string file_name;
 	ifstream fin;
-	fin.open("data.txt", ios::in);
+	cout << "Type load file name: ";
+	getline(cin, file_name);
+	fin.open(file_name, ios::in);
+	while (!fin.is_open())
+	{
+		cin.clear();
+		cout << "File not found, try again: ";
+		getline(cin, file_name);
+		fin.open(file_name, ios::in);
+	}
 	bool stations_part = false;
 	bool pipes_part = false;
 	pipes.clear();
@@ -438,6 +458,8 @@ void LoadAll(vector<Compress_station>& stations, vector<Pipe>& pipes) {
 			}
 		}
 	}
+	fin.close();
+	WriteLog("User loaded from file", file_name);
 }
 
 vector <Pipe> SearchPipes(vector<Pipe>& pipes) {
@@ -613,7 +635,7 @@ int main()
 			if (isNameUnique(pipes, new_pipe.name)) {
 				pipes.push_back(new_pipe);
 			}
-			WriteLog("Пользователь создал трубу", new_pipe.name);
+			WriteLog("User created pipe", new_pipe.name);
 			break;
 		}
 		case 2:
@@ -623,7 +645,7 @@ int main()
 			if (isNameUnique(stations, new_cs.name)) {
 				stations.push_back(new_cs);
 			}
-			WriteLog("Пользователь создал КС", new_cs.name);
+			WriteLog("User created CS", new_cs.name);
 			break;
 		}
 		case 3:
@@ -641,7 +663,7 @@ int main()
 			cout << "Type pipe name: ";
 			getline(cin, pipe_name);
 			ChangePipeStatus(pipes, pipe_name, true);
-			WriteLog("Пользователь изменил трубу", pipe_name);
+			WriteLog("User edited pipe", pipe_name);
 			break;
 
 		}
