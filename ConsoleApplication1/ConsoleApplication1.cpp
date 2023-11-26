@@ -5,186 +5,121 @@
 #include <algorithm>
 #include <chrono>
 #include <ctime>
+#include <map>
 using namespace std;
 
-struct Pipe
-{
+class Pipe {
+public:
+	Pipe()
+		: name("Pipe"), length(0.0), diameter(0), is_repairing(false) {}
+
+	string getName() const {
+		return name;
+	}
+
+	double getLength() const {
+		return length;
+	}
+
+	int getDiameter() const {
+		return diameter;
+	}
+
+	bool isRepairing() const {
+		return is_repairing;
+	}
+
+	void setName(string newName) {
+		name = newName;
+	}
+
+	void setLength(double newLength) {
+		length = newLength;
+	}
+
+	void setDiameter(int newDiam) {
+		diameter = newDiam;
+	}
+
+	void setStatus(bool value) {
+		is_repairing = value;
+	}
+
+
+private:
 	string name;
-	double length = 0;
-	int diameter = 0;
-	bool is_repairing = false;
+	double length;
+	int diameter;
+	bool is_repairing;
 };
 
-struct Compress_station
-{
-	string name;
-	int shops_num = 0;
-	int busy_shops_num = 0;
-	int efficiency = 0;
+class Compress_station {
+public:
+	Compress_station()
+		: name("CS"), shops_num(0), busy_shops_num(0), efficiency(0) {}
 
-};
-
-
-bool compareByPercentage(const Compress_station& a, const Compress_station& b) {
-    return (a.busy_shops_num / a.shops_num) < (b.busy_shops_num / b.shops_num);
-}
-
-Pipe CreatePipe()
-{
-	Pipe new_pipe;
-	cout << "Type name: ";
-	cin.ignore(1, '\n');
-	string name;
-	getline(cin, name);
-	new_pipe.name = name;
-	cout << "Type length: ";
-	cin >> new_pipe.length;
-	while (cin.fail() || new_pipe.length <= 0)
-	{
-		cin.clear();
-		cin.ignore(int(pow(10, 6)), '\n');
-		cout << "Type correct info (>0): ";
-		cin >> new_pipe.length;
-	}
-	cout << "Type diameter:";
-	cin >> new_pipe.diameter;
-	while (cin.fail() || new_pipe.diameter <= 0)
-	{
-		cin.clear();
-		cin.ignore(int(pow(10, 6)), '\n');
-		cout << "Type correct info (>0): ";
-		cin >> new_pipe.diameter;
-	}
-	return new_pipe;
-
-}
-
-Compress_station CreateCS()
-{
-	Compress_station new_cs;
-	cout << "Type name: ";
-	cin >> new_cs.name;
-	cout << "Type shops amount: ";
-	cin >> new_cs.shops_num;
-	while (cin.fail() || new_cs.shops_num <= 0)
-	{
-		cin.clear();
-		cin.ignore(int(pow(10, 6)), '\n');
-		cout << "Type correct info (>0): ";
-		cin >> new_cs.shops_num;
-	}
-	cout << "Type efficiency: ";
-	cin >> new_cs.efficiency;
-	return new_cs;
-}
-
-void ShowMenu()
-{
-	cout << "1. Add pipe" << "\n"
-		<< "2. Add CS" << "\n"
-		<< "3. Show all objects" << "\n"
-		<< "4. Edit Pipe" << "\n"
-		<< "5. Edit CS" << "\n"
-		<< "6. Save" << "\n"
-		<< "7. Load" << "\n"
-		<< "8. Search" << "\n"
-		<< "9. Exit" << "\n";
-}
-
-void WriteLog(string action, string obj_name) {
-	ofstream fout;
-	fout.open("logs.txt", ios::app);
-	time_t result = time(0);
-
-	char cur_time[50];
-	ctime_s(cur_time, sizeof cur_time, &result);
-
-	fout << action << " " << obj_name << "   " << cur_time;
-	fout.close();
-}
-
-void ChangePipeStatus(vector<Pipe>& pipes, string pipe_name, bool solo_edit)
-{
-	bool name_exists = false;
-	int ind = -1;
-	for (Pipe pipe : pipes) {
-		ind++;
-		if (pipe.name == pipe_name) {
-			name_exists = true;
-			pipe.is_repairing = !pipe.is_repairing;
-			pipes[ind] = pipe;
-			break;
-		}
-	}
-	if (!name_exists) {
-		cout << "Wrong name! Try again.\n";
-		return;
+	std::string getName() const {
+		return name;
 	}
 
-	if (solo_edit) {
-		cout << "Status Changed!\n";
-		return;
+	int getShops_num() const {
+		return shops_num;
 	}
-}
 
-void EditShops(vector<Compress_station>& stations, string cs_name, bool action, int shops_num)
-{
-	bool name_exists = false;
-	bool num_correct = false;
-	int ind = -1;
-	for (Compress_station cs : stations) {
-		ind++;
-		if (cs.name == cs_name) {
-			name_exists = true;
-			if (action) {
-				if (shops_num <= cs.shops_num - cs.busy_shops_num)
-				{
-					cs.busy_shops_num += shops_num;
-					num_correct = true;
-					stations[ind] = cs;
-					WriteLog("User edited CS", cs_name);
-					cout << "Status Changed!\n";
-				}
-				break;
+	int getBusy_shops_num() const {
+		return busy_shops_num;
+	}
+
+	int getEfficiency() const {
+		return efficiency;
+	}
+
+	double getBusy() const {
+		return (busy_shops_num / shops_num) * 100;
+	}
+
+	void setName(string newName) {
+		name = newName;
+	}
+
+	void setShopsNum(int newNum) {
+		shops_num = newNum;
+	}
+
+	void setBusyShopNum(int newBusy) {
+		busy_shops_num = newBusy;
+	}
+
+	void setEfficiency(int newEfficiency) {
+		efficiency = newEfficiency;
+	}
+
+	void EditShops(string action, int shops) {
+		if (action == "activate") {
+			if (shops <= (shops_num - busy_shops_num)) {
+				busy_shops_num += shops;
 			}
 			else {
-				if (shops_num <= cs.busy_shops_num)
-				{
-					cs.busy_shops_num -= shops_num;
-					num_correct = true;
-					stations[ind] = cs;
-					WriteLog("User edited CS", cs_name);
-					cout << "Status Changed!\n";
-				}
-				break;
+				cout << "Invalid shops amount, try again.\n";
+			}
+		}
+
+		else {
+			if (shops <= busy_shops_num) {
+				busy_shops_num -= shops;
+			}
+			else {
+				cout << "Invalid shops amount, try again.\n";
 			}
 		}
 	}
-	if (!name_exists) {
-		cout << "Wrong name! Try again.\n";
-		return;
-	}
 
-	if (!num_correct) {
-		cout << "Invalid shops amount! Try again. \n";
-	}
-}
-
-void SavePipe(ofstream& fout, const Pipe& pipe)
-{
-	fout << pipe.name << "\n"
-		<< pipe.length << "\n"
-		<< pipe.diameter << "\n"
-		<< pipe.is_repairing << "\n";
-}
-
-void SaveCS(ofstream& fout, const Compress_station& cs)
-{
-	fout << cs.name << "\n"
-		<< cs.shops_num << "\n"
-		<< cs.busy_shops_num << "\n"
-		<< cs.efficiency << "\n";
-}
+private:
+	string name;
+	int shops_num;
+	int busy_shops_num;
+	int efficiency;
+};
 
 bool is_digit(const std::string& s)
 {
@@ -211,185 +146,555 @@ bool is_number(const std::string& s)
 		s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
 }
 
-Pipe LoadPipe(ifstream& fin, string name) {
-	Pipe pipe;
-	pipe.name = name;
-	string pipe_length;
-	getline(fin, pipe_length);
-	pipe.length = stof(pipe_length);
-	string pipe_diameter;
-	getline(fin, pipe_diameter);
-	pipe.diameter = stoi(pipe_diameter);
-	string pipe_status;
-	getline(fin, pipe_status);
-	pipe.is_repairing = stoi(pipe_status);
-	return pipe;
-}
-
-Compress_station LoadStation(ifstream& fin, string name) {
-	Compress_station station;
-	station.name = name;
-	string shops;
-	getline(fin, shops);
-	station.shops_num = stoi(shops);
-	string busy_shops;
-	getline(fin, busy_shops);
-	station.busy_shops_num = stoi(busy_shops);
-	string efficiency;
-	getline(fin, efficiency);
-	station.efficiency = stoi(efficiency);
-	return station;
-}
-
-istream& operator >> (istream& in, Compress_station& new_cs)
-{
-	cout << "Type name: ";
-	//cin.ignore(1, '\n');
-	string name;
-	getline(cin, name);
-	new_cs.name = name;
-	cout << "Type shops amount: ";
-	string shops_num;
-	getline(cin, shops_num);
-	while (!is_number(shops_num) || stoi(shops_num) <= 0)
-	{
-		cin.clear();
-		//cin.ignore(int(pow(10, 6)), '\n');
-		cout << "Type correct info (>0): ";
-		cin >> shops_num;
+class PipeMap {
+public:
+	void addElement(const Pipe& value) {
+		int newKey = getNextKey();
+		myMap[newKey] = value;
 	}
-	new_cs.shops_num = stoi(shops_num);
-	cout << "Type efficiency: ";
-	string efficiency;
-	getline(cin, efficiency);
-	if (efficiency == "") {
-		getline(cin, efficiency);
-	}
-	while (!is_number(efficiency) || stoi(efficiency) <= 0)
-	{
-		cin.clear();
-		//cin.ignore(int(pow(10, 6)), '\n');
-		cout << "Type correct info (>0): ";
-		getline(cin, efficiency);
-	}
-	new_cs.efficiency = stoi(efficiency);
-	return in;
-}
 
-ostream& operator << (ostream& out, const Compress_station& cs)
-{
-	out
-		<< "CS Name: " << cs.name << "\n"
-		<< "Overall shops: " << cs.shops_num << "\n"
-		<< "Busy shops: " << cs.busy_shops_num << "\n"
-		<< "Efficiency: " << cs.efficiency << "\n"
-		<< "--------" << "\n";
-	return out;
-}
-
-istream& operator >> (istream& in, Pipe& new_pipe)
-{
-	cout << "Type name: ";
-	//cin.ignore(1, '\n');
-	string name;
-	getline(cin, name);
-	new_pipe.name = name;
-	cout << "Type length: ";
-	string length;
-	getline(cin, length);
-	while (!is_digit(length) || stof(length) <= 0)
-	{
-		cin.clear();
-		//cin.ignore(int(pow(10, 6)), '\n');
-		cout << "Type correct info (>0): ";
-		getline(cin, length);
+	void removeElement(int key) {
+		myMap.erase(key);
 	}
-	new_pipe.length = stof(length);
-	cout << "Type diameter: ";
-	string diameter;
-	getline(cin, diameter);
-	while (!is_number(diameter) || stoi(diameter) <= 0)
-	{
-		cin.clear();
-		//cin.ignore(int(pow(10, 6)), '\n');
-		cout << "Type correct info (>0): ";
-		getline(cin, diameter);
-	}
-	new_pipe.diameter = stoi(diameter);
-	return in;
-}
 
-ostream& operator << (ostream& out, const Pipe& pipe)
-{
-	string repair_status = "False";
-	if (pipe.is_repairing)
-	{
-		repair_status = "True";
+	void clear() {
+		myMap.clear();
+		int currentKey = 1;
 	}
-	out
-		<< "Pipe Name: " << pipe.name << "\n"
-		<< "Pipe length: " << pipe.length << "\n"
-		<< "Pipe diameter: " << pipe.diameter << "\n"
-		<< "Is Reapairing: " << repair_status << "\n"
-		<< "--------" << "\n";
-	return out;
-}
+	
+	void addDirectly(int key, Pipe& pipe) {
+		myMap[key] = pipe;
+	}
 
-template <typename T>
-bool isNameUnique(const vector<T>& objects, const string& newName) {
-	for (const T& obj : objects) {
-		if (obj.name == newName) {
-			cout << "Name already exists!\n";
-			return false;
+	int getLastId() {
+		return currentKey;
+	}
+
+	void setLastId(int id) {
+		currentKey = id;
+	}
+
+	void printOneElement(int id) {
+		auto it = myMap.find(id);
+
+		if (it != myMap.end()) {
+			Pipe pair = it->second;
+			cout << "Pipe id: " << it->first << "\n"
+				<< "Pipe name: " << pair.getName() << "\n"
+				<< "Pipe length: " << pair.getLength() << "\n"
+				<< "Pipe diameter: " << pair.getDiameter() << "\n"
+				<< std::boolalpha
+				<< "Pipe repairing: " << pair.isRepairing() << "\n"
+				<< std::noboolalpha
+				<< "----------------\n";
+		}
+		else {
+			std::cerr << "Pipe with id " << id << " not found." << std::endl;
+			return;
 		}
 	}
-	return true; // Имя уникально
+
+	void printElements() const {
+		cout << "Pipes:\n";
+		for (const auto& pair : myMap) {
+			cout << "Pipe id: " << pair.first << "\n"
+				<< "Pipe name: " << pair.second.getName() << "\n"
+				<< "Pipe length: " << pair.second.getLength() << "\n"
+				<< "Pipe diameter: " << pair.second.getDiameter() << "\n"
+				<< std::boolalpha
+				<< "Pipe repairing: " << pair.second.isRepairing() << "\n"
+				<< std::noboolalpha
+				<< "----------------\n";
+		}
+	}
+
+	void saveElements(ofstream& fout) const {
+		for (const auto& pair : myMap) {
+			fout << pair.first << "\n"
+				<< pair.second.getName() << "\n"
+				<< pair.second.getLength() << "\n"
+				<< pair.second.getDiameter() << "\n"
+				<< pair.second.isRepairing() << "\n";
+		}
+	}
+
+	void loadElements(ifstream& fin, PipeMap& pipes) const {
+		string str;
+		getline(fin, str);
+		if (str == "Pipes:")
+		{
+			getline(fin, str);
+			if (str == "CompressStations:")
+			{
+				return;
+			}
+			pipes.setLastId(stoi(str));
+			while (true)
+			{
+				getline(fin, str);
+				if (str == "CompressStations:")
+				{
+					break;
+				}
+				else {
+					string name;
+					getline(fin, name);
+					string length;
+					getline(fin, length);
+					string diameter;
+					getline(fin, diameter);
+					string status;
+					getline(fin, status);
+					Pipe new_pipe;
+					new_pipe.setName(name);
+					new_pipe.setLength(stod(length));
+					new_pipe.setDiameter(stoi(diameter));
+					new_pipe.setStatus(stoi(status));
+					pipes.addDirectly(stoi(str), new_pipe);
+					continue;
+				}
+			}
+		}
+
+	}
+
+	vector<int> searchElements(string filter) {
+		vector<int> result;
+		if (filter == "name") {
+			string name;
+			cout << "Type pipe name to search: ";
+			getline(cin, name);
+			for (auto& pair : myMap) {
+				if (pair.second.getName().find(name) != string::npos) {
+					result.push_back(pair.first);
+				}
+			}
+		}
+
+		else {
+
+			string status;
+			while (true) {
+				cout << "Type filter for search (true/false): ";
+				getline(cin, status);
+				if (status == "true" or status == "false") {
+					break;
+				}
+
+				else {
+					cout << "Invalid input. Please enter 'true' or 'false'." << std::endl;
+				}
+			}
+			bool bstatus;
+			if (status == "true") {
+				bstatus = true;
+			}
+			else {
+				bstatus = false;
+			}
+			for (auto& pair : myMap) {
+				if (pair.second.isRepairing() == bstatus) {
+					result.push_back(pair.first);
+				}
+				
+			}
+		}
+
+		return result;
+	}
+
+	map<int, Pipe>::iterator find(int key) {
+		return myMap.find(key);
+	}
+
+	map<int, Pipe>::iterator end() {
+		return myMap.end();
+	}
+
+private:
+	map<int, Pipe> myMap;
+	int currentKey = 1;
+
+	int getNextKey() {
+		return currentKey++;
+	}
+};
+
+class CSMap {
+public:
+	void addElement(const Compress_station& value) {
+		int newKey = getNextKey();
+		myMap[newKey] = value;
+	}
+
+	void removeElement(int key) {
+		myMap.erase(key);
+	}
+
+	void clear() {
+		myMap.clear();
+		currentKey = 1;
+	}
+
+	void addDirectly(int key, Compress_station& cs) {
+		myMap[key] = cs;
+	}
+
+	int getLastId() {
+		return currentKey + 1;
+	}
+
+	void setLastId(int id) {
+		currentKey = id;
+	}
+
+	vector<int> searchElements(string filter) {
+		vector<int> result;
+		if (filter == "name") {
+			string name;
+			cout << "Type cs name to search: ";
+			getline(cin, name);
+			for (auto& pair : myMap) {
+				if (pair.second.getName().find(name) != string::npos) {
+					result.push_back(pair.first);
+				}
+			}
+		}
+
+		else {
+			string percent;
+			cout << "Type percent (integer) for search: ";
+			getline(cin, percent);
+			while (true) {
+				if (is_digit(percent) && stoi(percent) >= 0) {
+					break;
+				}
+				else {
+					cout << "Invalid input. Please enter a positive integer." << endl;
+				}
+			}
+
+			string parameter;
+			while (true) {
+				cout << "Type parameter to search (lower/higher): ";
+				getline(cin, parameter);
+				if (parameter == "lower" or parameter == "higher") {
+					break;
+				}
+
+				else {
+					cout << "Invalid input. Please enter 'higher' or 'lower'." << endl;
+				}
+			}
+
+			for (auto& pair : myMap)
+			{
+				if (parameter == "lower") {
+					if (pair.second.getBusy() < stoi(percent)) {
+						result.push_back(pair.first);
+					}
+				}
+				else {
+					if (pair.second.getBusy() > stoi(percent)) {
+						result.push_back(pair.first);
+					}
+				}
+			}
+
+		}
+
+		return result;
+	}
+
+	void printElements() const {
+		cout << "Compress Stations:\n";
+		for (const auto& pair : myMap) {
+			cout << "CS id: " << pair.first << "\n"
+				<< "CS name: " << pair.second.getName() << "\n"
+				<< "CS shops amount: " << pair.second.getShops_num() << "\n"
+				<< "CS busy shops amount: " << pair.second.getBusy_shops_num() << "\n"
+				<< "CS efficiency: " << pair.second.getEfficiency() << "\n"
+				<< "----------------\n";
+		}
+	}
+
+	void printOneElement(int id) {
+		auto it = myMap.find(id);
+
+		if (it != myMap.end()) {
+			Compress_station pair = it->second;
+			cout << "CS id: " << it->first << "\n"
+				<< "CS name: " << pair.getName() << "\n"
+				<< "CS shops amount: " << pair.getShops_num() << "\n"
+				<< "CS busy shops amount: " << pair.getBusy_shops_num() << "\n"
+				<< "CS effciency: " << pair.getEfficiency() << "\n"
+				<< "----------------\n";
+		}
+		else {
+			std::cerr << "CS with id " << id << " not found." << std::endl;
+			return;
+		}
+	}
+
+	void saveElements(ofstream& fout) const {
+		for (const auto& pair : myMap) {
+			fout << pair.first << "\n"
+				<< pair.second.getName() << "\n"
+				<< pair.second.getShops_num() << "\n"
+				<< pair.second.getBusy_shops_num() << "\n"
+				<< pair.second.getEfficiency() << "\n";
+		}
+	}
+
+	void loadElements(ifstream& fin, CSMap& stations) const {
+		string str;
+		getline(fin, str);
+		if (str != "")
+		{
+			stations.setLastId(stoi(str));
+			while (true)
+			{
+				getline(fin, str);
+				if (str == "") {
+					break;
+				}
+				Compress_station new_cs;
+				string name;
+				getline(fin, name);
+				new_cs.setName(name);
+				string shops_num;
+				getline(fin, shops_num);
+				new_cs.setShopsNum(stoi(shops_num));
+				string busy_shops_num;
+				getline(fin, busy_shops_num);
+				new_cs.setBusyShopNum(stoi(busy_shops_num));
+				string efficiency;
+				getline(fin, efficiency);
+				new_cs.setEfficiency(stoi(efficiency));
+				stations.addDirectly(stoi(str), new_cs);
+			}
+		}
+
+	}
+
+	map<int, Compress_station>::iterator find(int key) {
+		return myMap.find(key);
+	}
+
+	map<int, Compress_station>::iterator end() {
+		return myMap.end();
+	}
+
+private:
+	map<int, Compress_station> myMap;
+	int currentKey = 1;
+
+	int getNextKey() {
+		return currentKey++;
+	}
+};
+
+
+bool compareByPrecentage(const Compress_station& station1, const Compress_station& station2) {
+	double ratio1 = static_cast<double>(station1.getBusy_shops_num()) / station1.getShops_num();
+	double ratio2 = static_cast<double>(station2.getBusy_shops_num()) / station2.getShops_num();
+
+	return ratio1 < ratio2;
 }
 
-template <typename T>
-void ShowAllObjects(const vector<T>& objects)
+Pipe CreatePipe()
 {
-	for (const T& obj : objects) {
-			cout << obj;
+	string name;
+	string length;
+	string diameter;
+
+	cout << "Enter pipe name: ";
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	getline(cin, name);
+
+	while (true) {
+		cout << "Enter pipe length: ";
+		getline(cin, length);
+		if (is_digit(length) && stoi(length) > 0) {
+			break;
+		}
+		else {
+			cout << "Invalid input. Please enter a positive integer." << endl;
+		}
 	}
+
+	while (true) {
+		cout << "Enter pipe diameter: ";
+		getline(cin, diameter);
+		if (is_number(diameter) && stoi(diameter) > 0) {
+			break;
+		}
+		else {
+			cout << "Invalid input. Please enter a natural integer." << endl;
+		}
+	}
+
+	Pipe newPipe;
+	newPipe.setName(name);
+	newPipe.setLength(stod(length));
+	newPipe.setDiameter(stoi(diameter));
+	return newPipe;
 }
 
-void EditCS(vector<Compress_station> &stations) {
-	string cs_name = "";
-	string action = "";
-	string shops_num = "";
-	cout << "Type station name: ";
-	getline(cin, cs_name);
-	cout << "Type action (activate/disable): ";
-	getline(cin, action);
-	if (action == "") {
-		getline(cin, action);
+Compress_station CreateCS()
+{
+	string name;
+	int shops_num;
+	int busy_shops_num;
+	int efficiency;
+
+	cout << "Enter station name: ";
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	getline(cin, name);
+
+	while (true) {
+		cout << "Enter amount of shops: ";
+		if (cin >> shops_num && shops_num > 0) {
+			break;
+		}
+		else {
+			cout << "Invalid input. Please enter a natural integer." << endl;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		}
 	}
-	while (action != "activate" && action != "disable")
-	{
-		cin.clear();
-		cout << "Type correct acton: ";
-		getline(cin, action);
+
+	while (true) {
+		cout << "Enter busy shops amount: ";
+		if (cin >> busy_shops_num && busy_shops_num > 0 && busy_shops_num <= shops_num) {
+			break;
+		}
+		else {
+			cout << "Invalid input. Please enter a natural integer not higher than the first." << endl;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		}
 	}
-	cout << "Type amount of shops you want to edit: ";
-	getline(cin, shops_num);
-	while (!is_number(shops_num) || cin.fail() || stoi(shops_num) <= 0)
-	{
-		cin.clear();
-		cout << "Type correct info: ";
-		getline(cin, shops_num);
+
+	while (true) {
+		cout << "Enter efficiency: ";
+		if (cin >> efficiency && efficiency > 0) {
+			break;
+		}
+		else {
+			cout << "Invalid input. Please enter a natural integer." << endl;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		}
 	}
-	if (action == "activate") {
-		EditShops(stations, cs_name, true, stoi(shops_num));
+
+	Compress_station new_cs;
+	new_cs.setName(name);
+	new_cs.setShopsNum(shops_num);
+	new_cs.setBusyShopNum(busy_shops_num);
+	new_cs.setEfficiency(efficiency);
+	return new_cs;
+}
+
+void ShowMenu()
+{
+	cout << "1. Add pipe" << "\n"
+		<< "2. Add CS" << "\n"
+		<< "3. Show all objects" << "\n"
+		<< "4. Edit Pipe" << "\n"
+		<< "5. Edit CS" << "\n"
+		<< "6. Save" << "\n"
+		<< "7. Load" << "\n"
+		<< "8. Search" << "\n"
+		<< "9. Delete object" << "\n"
+		<< "10. Exit" << "\n";
+}
+
+void WriteLog(string action, string obj_name) {
+	ofstream fout;
+	fout.open("logs.txt", ios::app);
+	time_t result = time(0);
+
+	char cur_time[50];
+	ctime_s(cur_time, sizeof cur_time, &result);
+
+	fout << action << " " << obj_name << "   " << cur_time;
+	fout.close();
+}
+
+void ChangePipeStatus(PipeMap& pipes, int pipe_id, bool solo_edit)
+{
+	auto it = pipes.find(pipe_id);
+
+	if (it != pipes.end()) {
+		bool current_status = it->second.isRepairing();
+		it->second.setStatus(!(current_status));
 	}
 	else {
-		EditShops(stations, cs_name, false, stoi(shops_num));
+		std::cerr << "Pipe with id " << pipe_id << " not found." << std::endl;
+		return;
+	}
+
+	if (solo_edit) {
+		cout << "Status Changed!\n";
+		return;
 	}
 }
 
-void SaveAll(vector<Compress_station>& stations, vector<Pipe>& pipes) {
+void EditCS(CSMap& stations) {
+	string action, cs_id, shops;
+	cin.clear();
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	while (true) {
+		cout << "Type station id: ";
+		getline(cin, cs_id);
+		if (is_number(cs_id)) {
+			break;
+		}
+		else {
+			cout << "Invalid input. Please enter a valid integer." << endl;
+			continue;
+		}
+	}
+	auto it = stations.find(stoi(cs_id));
+
+	if (it != stations.end()) {
+		Compress_station& cs = it->second;
+		while (true) {
+			cout << "Type action (activate/disable): ";
+			getline(cin, action);
+			if (action == "activate" or action == "disable") {
+				break;
+				}
+
+			else {
+				cout << "Invalid input. Please enter 'activate' or 'disable'." << endl;
+			}
+		}
+
+		while (true) {
+			cout << "Type number of shops to edit: ";
+			getline(cin, shops);
+			if (is_number(shops) and stoi(shops) > 0) {
+				cs.EditShops(action, stoi(shops));
+				break;
+			}
+			else {
+				cout << "Invalid input. Please enter a valid integer." << endl;
+				continue;
+			}
+		}
+	}
+	else {
+		std::cerr << "CS with id " << cs_id << " not found." << std::endl;
+	}
+}
+
+void SaveAll(PipeMap& pipes, CSMap& stations) {
 	string file_name;
 	cout << "Type save file name:";
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	cin.clear();
 	getline(cin, file_name);
 	while (file_name == "")
 	{
@@ -400,28 +705,30 @@ void SaveAll(vector<Compress_station>& stations, vector<Pipe>& pipes) {
 	ofstream fout;
 	fout.open(file_name, ios::out);
 	fout << "Pipes:\n";
+	if (pipes.getLastId() != 1) {
+		fout << to_string(pipes.getLastId()) + "\n";
+	}
 	if (fout.is_open())
 	{
-		for (Pipe pipe : pipes)
-		{
-			SavePipe(fout, pipe);
-		}
+		pipes.saveElements(fout);
 	}
 	fout << "CompressStations:\n";
+	if (stations.getLastId() != 1) {
+		fout << to_string(stations.getLastId()) + "\n";
+	}
 	if (fout.is_open())
 	{
-		for (Compress_station cs : stations)
-		{
-			SaveCS(fout, cs);
-		}
+		stations.saveElements(fout);
 	}
 	fout.close();
 	WriteLog("User saved to file", file_name);
 }
 
-void LoadAll(vector<Compress_station>& stations, vector<Pipe>& pipes) {
+void LoadAll(PipeMap& pipes, CSMap& stations) {
 	string file_name;
 	ifstream fin;
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	cin.clear();
 	cout << "Type load file name: ";
 	getline(cin, file_name);
 	fin.open(file_name, ios::in);
@@ -432,238 +739,247 @@ void LoadAll(vector<Compress_station>& stations, vector<Pipe>& pipes) {
 		getline(cin, file_name);
 		fin.open(file_name, ios::in);
 	}
-	bool stations_part = false;
-	bool pipes_part = false;
-	pipes.clear();
-	stations.clear();
 	if (fin.is_open()) {
-		while (1) {
-			string str;
-			getline(fin, str);
-			if (str == "Pipes:") {
-				pipes_part = true;
-			}
-			else if (str == "CompressStations:") {
-				stations_part = true;
-				pipes_part = false;
-			}
-			else if (pipes_part && str != "") {
-				pipes.push_back(LoadPipe(fin, str));
-			}
-			else if (stations_part && str != "") {
-				stations.push_back(LoadStation(fin, str));
-			}
-			else if (str == "") {
-				break;
-			}
-		}
+		pipes.loadElements(fin, pipes);
+		stations.loadElements(fin, stations);
 	}
 	fin.close();
 	WriteLog("User loaded from file", file_name);
 }
 
-vector <Pipe> SearchPipes(vector<Pipe>& pipes) {
-	string filter;
-	vector <Pipe> result;
-	cout << "Search by (name/status): ";
-	getline(cin, filter);
-	if (filter == "") {
-		getline(cin, filter);
-	}
-
-	while (filter != "name" && filter != "status")
-	{
-		cin.clear();
-		cout << "Type correct filter: ";
-		getline(cin, filter);
-	}
-
-	if (filter == "name") {
-		cout << "Type pipe name: ";
-		string pipe_name;
-		getline(cin, pipe_name);
-		cout << "Search result:\n\n";
-		bool found_sth = false;
-		for (Pipe pipe : pipes) {
-			if (pipe.name == pipe_name) {
-				found_sth = true;
-				cout << pipe;
-				result.push_back(pipe);
-			}
-		}
-		if (!found_sth) {
-			cout << "Couldnt find anything by your filters.\n\n";
-		}
-	}
-
-	if (filter == "status") {
-		string status;
-		cout << "Search is repairing (true/false): ";
-		getline(cin, status);
-		if (status == "") {
-			getline(cin, status);
-		}
-
-		while (status != "true" && status != "false")
-		{
-			cin.clear();
-			cout << "Type correct status: ";
-			getline(cin, status);
-		}
-
-		bool search_by_status;
-		if (status == "true") {
-			search_by_status = true;
-		}
-		else {
-			search_by_status = false;
-		}
-		cout << "Search result:\n\n";
-		bool found_sth = false;
-		for (Pipe pipe : pipes) {
-			if (pipe.is_repairing == search_by_status) {
-				found_sth = true;
-				cout << pipe;
-				result.push_back(pipe);
-			}
-		}
-		if (!found_sth) {
-			cout << "Couldnt find anything by your filters.\n\n";
-		}
-	}
-
-	return result;
-}
-
-void Search(vector<Compress_station> stations, vector<Pipe>& pipes) {
+void Delete(PipeMap& pipes, CSMap& stations) {
 	string object;
-	cout << "What object do you want to find (pipe/cs): ";
-	getline(cin, object);
-	if (object == "") {
+	cin.clear();
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	while (true) {
+		cout << "Type object to delete (pipe/cs): ";
 		getline(cin, object);
-	}
+		if (object == "pipe" or object == "cs") {
+			break;
+		}
 
-	while (object != "pipe" && object != "cs")
-	{
-		cin.clear();
-		cout << "Type correct object: ";
-		getline(cin, object);
+		else {
+			cout << "Invalid input. Please enter 'pipe' or 'cs'." << std::endl;
+		}
 	}
 
 	if (object == "pipe") {
-		vector<Pipe> result = SearchPipes(pipes);
-		if (result.size() != 0) {
-			string answer;
-			cout << "Change status (y/n): ";
-			getline(cin, answer);
-			while (answer != "y" && answer != "n")
-			{
-				cin.clear();
-				cout << "Type correct filter: ";
-				getline(cin, answer);
+		string pipe_id;
+		while (true) {
+			cout << "Type pipe id: ";
+			getline(cin, pipe_id);
+			if (is_number(pipe_id)) {
+				break;
 			}
-			if (answer == "y") {
-				for (Pipe pipe : result) {
-					ChangePipeStatus(pipes, pipe.name, false);
-				}
-				cout << "Status Changed!\n";
-				return;
+			else {
+				cout << "Invalid input. Please enter a valid integer." << endl;
+				continue;
 			}
+		}
+		auto it = pipes.find(stoi(pipe_id));
+
+		if (it != pipes.end()) {
+			pipes.removeElement(stoi(pipe_id));
+		}
+
+		else {
+			cerr << "Pipe with id " << pipe_id << " not found." << endl;
 		}
 	}
 
-	if (object == "cs") {
-		string filter;
-		cout << "Search by (name/shops): ";
-		getline(cin, filter);
-		if (filter == "") {
-			getline(cin, filter);
-		}
-
-		while (filter != "name" && filter != "shops")
-		{
-			cin.clear();
-			cout << "Type correct filter: ";
-			getline(cin, filter);
-		}
-
-		if (filter == "name") {
-			cout << "Type cs name: ";
-			string cs_name;
-			getline(cin, cs_name);
-			cout << "Search result:\n\n";
-			bool found_sth = false;
-			for (Compress_station cs : stations) {
-				if (cs.name == cs_name) {
-					found_sth = true;
-					cout << cs;
-				}
+	else {
+		string cs_id;
+		while (true) {
+			cout << "Type cs id: ";
+			getline(cin, cs_id);
+			if (is_number(cs_id)) {
+				break;
 			}
-			if (!found_sth) {
-				cout << "Couldnt find anything by your filters.\n\n";
+			else {
+				cout << "Invalid input. Please enter a valid integer." << endl;
+				continue;
 			}
 		}
+		auto it = stations.find(stoi(cs_id));
+
+		if (it != stations.end()) {
+			stations.removeElement(stoi(cs_id));
+		}
+
 		else {
-			sort(begin(stations), end(stations), compareByPercentage);
-			cout << "Sorted by active shops precantage:\n\n";
-			for (Compress_station cs: stations) {
-				cout << cs;
-			}
+			cerr << "CS with id " << cs_id << " not found." << endl;
 		}
+	}
+}
+
+void SearchPipes(PipeMap& pipes) {
+	string filter;
+	while (true) {
+		cout << "Type filter for search (name/status): ";
+		getline(cin, filter);
+		if (filter == "name" or filter == "status") {
+			break;
+		}
+
+		else {
+			cout << "Invalid input. Please enter 'name' or 'status'." << std::endl;
+		}
+	}
+
+	vector<int> result = pipes.searchElements(filter);
+
+	if (size(result) > 0) {
+
+		for (int id : result) {
+			cout << "\n";
+			pipes.printOneElement(id);
+			cout << "\n";
+		}
+	}
+	else {
+		cout << "\n Nothing found! \n\n";
+		return;
+	}
+
+	string decision;
+	while (true) {
+		cout << "Do you want to change status of found pipes (y/n)?: ";
+		getline(cin, decision);
+		if (decision == "y" or decision == "n") {
+			break;
+		}
+
+		else {
+			cout << "Invalid input. Please enter 'y' or 'n'." << std::endl;
+		}
+	}
+
+	if (decision == "y") {
+		for (int id : result) {
+			ChangePipeStatus(pipes, id, false);
+		}
+		cout << "Status changed!\n";
+	}
+	return;
+
+}
+
+void SearchCS(CSMap& stations) {
+	string filter;
+	while (true) {
+		cout << "Type filter for search (name/percent): ";
+		getline(cin, filter);
+		if (filter == "name" or filter == "percent") {
+			break;
+		}
+
+		else {
+			cout << "Invalid input. Please enter 'name' or 'percent'." << std::endl;
+		}
+	}
+
+	vector<int> result = stations.searchElements(filter);
+
+	if (size(result) > 0) {
+
+		for (int id : result) {
+			cout << "\n";
+			stations.printOneElement(id);
+			cout << "\n";
+		}
+	}
+	else {
+		cout << "\n Nothing found! \n\n";
+		return;
+	}
+
+
+}
+
+void Search(PipeMap& pipes, CSMap& stations) {
+	string object;
+	cin.clear();
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	while (true) {
+		cout << "Type object to search (pipe/cs): ";
+		getline(cin, object);
+		if (object == "pipe" or object == "cs") {
+			break;
+		}
+
+		else {
+			cout << "Invalid input. Please enter 'pipe' or 'cs'." << std::endl;
+		}
+	}
+
+	if (object == "pipe") {
+		SearchPipes(pipes);
+		return;
+	}
+
+	else {
+		SearchCS(stations);
+		return;
 	}
 }
 
 int main()
 {
-	vector <Pipe> pipes;
-	vector <Compress_station> stations;
+	PipeMap pipes;
+	CSMap stations;
 	while (1) {
 		ShowMenu();
-		string action = "";
+		int action;
 		cout << "Type number (1-8): ";
-		getline(cin, action);
-		while (!is_number(action) && action != "") {
-			cout << "Wrong action, type again: ";
-			getline(cin, action);
+		if (!(cin >> action) or action <= 0 or action >= 10) {
+			cerr << "Invalid input. Please enter a valid integer." << endl;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			continue;
 		}
-		switch (stoi(action))
+
+		switch (action)
 		{
 		case 1:
 		{
-			Pipe new_pipe;
-			cin >> new_pipe;
-			if (isNameUnique(pipes, new_pipe.name)) {
-				pipes.push_back(new_pipe);
-			}
-			WriteLog("User created pipe", new_pipe.name);
+			Pipe new_pipe = CreatePipe();
+			pipes.addElement(new_pipe);
+
+			WriteLog("User created pipe", new_pipe.getName());
 			break;
 		}
 		case 2:
 		{
-			Compress_station new_cs;
-			cin >> new_cs;
-			if (isNameUnique(stations, new_cs.name)) {
-				stations.push_back(new_cs);
-			}
-			WriteLog("User created CS", new_cs.name);
+			Compress_station new_cs = CreateCS();
+			stations.addElement(new_cs);
+			WriteLog("User created CS", new_cs.getName());
 			break;
 		}
 		case 3:
 		{
-			cout << "Pipes:\n\n";
-			ShowAllObjects(pipes);
-			cout << "Compress Stations:\n\n";
-			ShowAllObjects(stations);
+			cout << "\n";
+			pipes.printElements();
+			stations.printElements();
 			cout << "\n";
 			break;
 		}
 		case 4:
 		{
-			string pipe_name = "";
-			cout << "Type pipe name: ";
-			getline(cin, pipe_name);
-			ChangePipeStatus(pipes, pipe_name, true);
-			WriteLog("User edited pipe", pipe_name);
+			string pipe_id;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			while (true) {
+				cout << "Enter pipe id: ";
+				getline(cin, pipe_id);
+				if (is_number(pipe_id)) {
+					break;
+				}
+				else {
+					cout << "Invalid input. Please enter an integer." << endl;
+				}
+			}
+			ChangePipeStatus(pipes, stoi(pipe_id), true);
+			WriteLog("User edited pipe with id", pipe_id);
 			break;
 
 		}
@@ -674,20 +990,27 @@ int main()
 		}
 		case 6:
 		{
-			SaveAll(stations, pipes);
+			SaveAll(pipes, stations);
 			break;
 		}
 		case 7:
 		{
-			LoadAll(stations, pipes);
+			pipes.clear();
+			stations.clear();
+			LoadAll(pipes, stations);
 			break;
 		}
 		case 8:
 		{
-			Search(stations, pipes);
+			Search(pipes, stations);
 			break; 
 		}
-		case 9:
+
+		case 9: {
+			Delete(pipes, stations);
+			break;
+		}
+		case 10:
 		{
 			return 0;
 		}
