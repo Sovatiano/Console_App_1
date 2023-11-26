@@ -75,7 +75,7 @@ public:
 	}
 
 	double getBusy() const {
-		return (busy_shops_num / shops_num) * 100;
+		return  float(busy_shops_num) / float(shops_num) * 100;
 	}
 
 	void setName(string newName) {
@@ -493,14 +493,6 @@ private:
 		return currentKey++;
 	}
 };
-
-
-bool compareByPrecentage(const Compress_station& station1, const Compress_station& station2) {
-	double ratio1 = static_cast<double>(station1.getBusy_shops_num()) / station1.getShops_num();
-	double ratio2 = static_cast<double>(station2.getBusy_shops_num()) / station2.getShops_num();
-
-	return ratio1 < ratio2;
-}
 
 Pipe CreatePipe()
 {
