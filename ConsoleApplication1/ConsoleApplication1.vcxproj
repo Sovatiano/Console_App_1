@@ -127,7 +127,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BooleanFuncs.cpp" />
     <ClCompile Include="ConsoleApplication1.cpp" />
+    <ClCompile Include="EditFuncs.cpp" />
+    <ClCompile Include="FileWorkingFuncs.cpp" />
+    <ClCompile Include="Object_Creation.cpp" />
+    <ClCompile Include="OilNetFuncs.cpp" />
+    <ClCompile Include="SearchFuncs.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="entities.h" />
+    <ClInclude Include="SearchFuncs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

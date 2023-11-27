@@ -7,6 +7,7 @@
 #include <chrono>
 #include <ctime>
 #include <map>
+#include <unordered_map>
 using namespace std;
 
 
@@ -121,6 +122,159 @@ private:
 	int shops_num;
 	int busy_shops_num;
 	int efficiency;
+};
+
+class OilNetwork {
+public:
+
+	void addEdge(int v1, int v2, int edge) {
+		adjMatrix[v1].push_back(v2);
+		edgeAdjMatrix[edge].push_back(v1);
+		edgeAdjMatrix[edge].push_back(v2);
+	}
+
+	void addVertex(int v) {
+		adjMatrix[v];
+	}
+
+	auto getAdjMat() {
+		return adjMatrix;
+	}
+
+	auto getEdgeMat() {
+		return edgeAdjMatrix;
+	}
+
+	bool ifEdgeExists(int edge) {
+		auto it = edgeAdjMatrix.find(edge);
+
+		if (it == edgeAdjMatrix.end()) {
+			return false;
+		}
+		return true;
+	}
+
+	int ifVertexExists(int v) {
+		for (auto& row : edgeAdjMatrix) {
+
+			if (row.second[0] == v) {
+				return row.second[0];
+			}
+
+			if (row.second[1] == v) {
+				return row.second[1];
+			}
+		}
+
+		return 0;
+	}
+
+	void printTable() {
+		for (auto& pair : adjMatrix) {
+			cout << pair.first << "  ->  ";
+
+			for (size_t ind = 0; ind < pair.second.size(); ++ind) {
+				cout << pair.second[ind];
+
+				if (ind < pair.second.size() - 1) {
+					cout << " -> ";
+				}
+			}
+
+			cout << "\n";
+		}
+
+		cout << "\n-----------\n";
+		for (auto& pair : edgeAdjMatrix) {
+			cout << pair.first << "    ";
+			cout << pair.second[0] << " -> " << pair.second[1] << "\n\n";
+		}
+	}
+
+private:
+	unordered_map<int, vector<int>> adjMatrix;
+	unordered_map<int, vector<int>> edgeAdjMatrix;
+};
+
+class NetworkMap {
+public:
+	void addElement(const OilNetwork& value) {
+		int newKey = getNextKey();
+		myMap[newKey] = value;
+	}
+
+	void removeElement(int key) {
+		myMap.erase(key);
+	}
+
+	void clear() {
+		myMap.clear();
+		currentKey = 1;
+	}
+
+	void addDirectly(int key, OilNetwork& on) {
+		myMap[key] = on;
+	}
+
+	int getLastId() {
+		currentKey += 1;
+		return currentKey - 1;
+	}
+
+	void setLastId(int id) {
+		currentKey = id;
+	}
+
+	bool searchPipe(int id) {
+		for (auto& pair : myMap) {
+			if (pair.second.ifEdgeExists(id)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void printElems() {
+		for (auto& pair : myMap) {
+			cout << pair.first << "\n\n";
+			pair.second.printTable();
+			cout << "\n\n";
+		}
+	}
+
+	int searchVertex(int id) {
+		for (auto& pair : myMap) {
+			if (pair.second.ifVertexExists(id) != 0) {
+				return pair.first;
+			}
+		}
+		return 0;
+	}
+
+	void addToMap(int id, int v1, int v2, int edge) {
+		int id2 = searchVertex(v2);
+		if (id2 == 0) {
+			myMap[id].addEdge(v1, v2, edge);
+		}
+		else {
+			combineNets(id, id2);
+			myMap[id].addEdge(v1, v2, edge);
+		}
+	}
+
+	void combineNets(int id1, int id2) {
+		for (auto& rows : myMap[id2].getEdgeMat()) {
+			myMap[id1].addEdge(rows.second[0], rows.second[1], rows.first);
+		}
+		myMap.erase(id2);
+	}
+private:
+	map<int, OilNetwork> myMap;
+	int currentKey = 1;
+
+	int getNextKey() {
+		return currentKey++;
+	}
 };
 
 bool is_digit(const std::string& s);
@@ -280,8 +434,16 @@ public:
 
 			}
 		}
-
 		return result;
+	}
+
+	int SearchByDiameter(int diameter, NetworkMap& stations) {
+		for (auto& pair : myMap) {
+			if (pair.second.getDiameter() == diameter and !(stations.searchPipe(pair.first))) {
+				return pair.first;
+			}
+		}
+		return 0;
 	}
 
 	map<int, Pipe>::iterator find(int key) {
@@ -475,7 +637,7 @@ private:
 	}
 };
 
-Pipe CreatePipe();
+Pipe CreatePipe(string diameter);
 
 Compress_station CreateCS();
 
@@ -496,3 +658,5 @@ void WriteLog(string action, string obj_name);
 void SaveAll(PipeMap& pipes, CSMap& stations);
 
 void LoadAll(PipeMap& pipes, CSMap& stations);
+
+void Connect(CSMap& stations, PipeMap& pipes, NetworkMap& network);

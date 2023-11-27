@@ -1,4 +1,4 @@
-#include "D:\cpp_projects\ConsoleApplication1\ConsoleApplication1\entities.h"
+#include "entities.h"
 
 void EditCS(CSMap& stations) {
 	string action, cs_id, shops;
@@ -115,12 +115,14 @@ void Delete(PipeMap& pipes, CSMap& stations) {
 }
 
 void ChangePipeStatus(PipeMap& pipes, int pipe_id, bool solo_edit)
+
 {
 	auto it = pipes.find(pipe_id);
 
 	if (it != pipes.end()) {
 		bool current_status = it->second.isRepairing();
 		it->second.setStatus(!(current_status));
+		WriteLog("User edited pipe with id", to_string(pipe_id));
 	}
 	else {
 		std::cerr << "Pipe with id " << pipe_id << " not found." << std::endl;

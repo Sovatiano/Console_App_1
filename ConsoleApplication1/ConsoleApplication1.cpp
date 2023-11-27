@@ -1,4 +1,4 @@
-﻿#include "D:\cpp_projects\ConsoleApplication1\ConsoleApplication1\entities.h"
+﻿#include "entities.h"
 
 void ShowMenu()
 {
@@ -11,18 +11,20 @@ void ShowMenu()
 		<< "7. Load" << "\n"
 		<< "8. Search" << "\n"
 		<< "9. Delete object" << "\n"
-		<< "10. Exit" << "\n";
+		<< "10. Connect stations" << "\n"
+		<< "11. Exit" << "\n";
 }
 
 int main()
 {
 	PipeMap pipes;
 	CSMap stations;
+	NetworkMap network;
 	while (1) {
 		ShowMenu();
 		int action;
 		cout << "Type number (1-8): ";
-		if (!(cin >> action) or action <= 0 or action >= 10) {
+		if (!(cin >> action) or action <= 0 or action > 11) {
 			cerr << "Invalid input. Please enter a valid integer." << endl;
 			cin.clear();
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -33,7 +35,7 @@ int main()
 		{
 		case 1:
 		{
-			Pipe new_pipe = CreatePipe();
+			Pipe new_pipe = CreatePipe("0");
 			pipes.addElement(new_pipe);
 
 			WriteLog("User created pipe", new_pipe.getName());
@@ -73,7 +75,6 @@ int main()
 				}
 			}
 			ChangePipeStatus(pipes, stoi(pipe_id), true);
-			WriteLog("User edited pipe with id", pipe_id);
 			break;
 
 		}
@@ -111,6 +112,12 @@ int main()
 
 		case 10:
 		{
+			Connect(stations, pipes, network);
+			network.printElems();
+			break;
+		}
+
+		case 11: {
 			return 0;
 		}
 

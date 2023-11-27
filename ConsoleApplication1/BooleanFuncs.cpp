@@ -1,4 +1,4 @@
-#include "D:\cpp_projects\ConsoleApplication1\ConsoleApplication1\entities.h"
+#include "entities.h"
 
 bool is_digit(const std::string & s)
 {

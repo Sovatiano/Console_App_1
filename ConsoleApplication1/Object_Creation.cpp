@@ -1,13 +1,11 @@
-#include "D:\cpp_projects\ConsoleApplication1\ConsoleApplication1\entities.h"
+#include "entities.h"
 
-Pipe CreatePipe()
+Pipe CreatePipe(string diameter)
 {
 	string name;
 	string length;
-	string diameter;
 
 	cout << "Enter pipe name: ";
-	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 	getline(cin, name);
 
 	while (true) {
@@ -21,14 +19,17 @@ Pipe CreatePipe()
 		}
 	}
 
-	while (true) {
-		cout << "Enter pipe diameter: ";
-		getline(cin, diameter);
-		if (is_number(diameter) && stoi(diameter) > 0) {
-			break;
-		}
-		else {
-			cout << "Invalid input. Please enter a natural integer." << endl;
+	if (diameter == "0") {
+		string diameter;
+		while (true) {
+			cout << "Enter pipe diameter: ";
+			getline(cin, diameter);
+			if (is_number(diameter) && stoi(diameter) > 0) {
+				break;
+			}
+			else {
+				cout << "Invalid input. Please enter a natural integer." << endl;
+			}
 		}
 	}
 
