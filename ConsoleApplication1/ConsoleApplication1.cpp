@@ -12,7 +12,9 @@ void ShowMenu()
 		<< "8. Search" << "\n"
 		<< "9. Delete object" << "\n"
 		<< "10. Connect stations" << "\n"
-		<< "11. Exit" << "\n";
+		<< "11. Make topological sort" << "\n"
+		<< "12. Delete connection" << "\n"
+		<< "13. Exit" << "\n";
 }
 
 int main()
@@ -24,7 +26,7 @@ int main()
 		ShowMenu();
 		int action;
 		cout << "Type number (1-8): ";
-		if (!(cin >> action) or action <= 0 or action > 11) {
+		if (!(cin >> action) or action <= 0 or action > 13) {
 			cerr << "Invalid input. Please enter a valid integer." << endl;
 			cin.clear();
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -55,6 +57,7 @@ int main()
 			cout << "\n";
 			pipes.printElements();
 			stations.printElements();
+			network.printElems();
 			cout << "\n";
 			break;
 		}
@@ -87,7 +90,7 @@ int main()
 
 		case 6:
 		{
-			SaveAll(pipes, stations);
+			SaveAll(pipes, stations, network);
 			break;
 		}
 
@@ -95,7 +98,8 @@ int main()
 		{
 			pipes.clear();
 			stations.clear();
-			LoadAll(pipes, stations);
+			network.clear();
+			LoadAll(pipes, stations, network);
 			break;
 		}
 
@@ -106,18 +110,27 @@ int main()
 		}
 
 		case 9: {
-			Delete(pipes, stations);
+			Delete(pipes, stations, network);
 			break;
 		}
 
 		case 10:
 		{
 			Connect(stations, pipes, network);
-			network.printElems();
 			break;
 		}
 
 		case 11: {
+			makeTopSort(network);
+			break;
+		}
+
+		case 12: {
+			deleteEdge(network);
+			break;
+		}
+
+		case 13: {
 			return 0;
 		}
 

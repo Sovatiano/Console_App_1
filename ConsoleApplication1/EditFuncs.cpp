@@ -49,7 +49,7 @@ void EditCS(CSMap& stations) {
 	}
 }
 
-void Delete(PipeMap& pipes, CSMap& stations) {
+void Delete(PipeMap& pipes, CSMap& stations, NetworkMap& networks) {
 	string object;
 	cin.clear();
 	cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -81,7 +81,7 @@ void Delete(PipeMap& pipes, CSMap& stations) {
 		auto it = pipes.find(stoi(pipe_id));
 
 		if (it != pipes.end()) {
-			pipes.removeElement(stoi(pipe_id));
+			pipes.removeElement(stoi(pipe_id), networks);
 		}
 
 		else {

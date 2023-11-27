@@ -12,7 +12,7 @@ void WriteLog(string action, string obj_name) {
 	fout.close();
 }
 
-void SaveAll(PipeMap& pipes, CSMap& stations) {
+void SaveAll(PipeMap& pipes, CSMap& stations, NetworkMap& networks) {
 	string file_name;
 	cout << "Type save file name:";
 	cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -26,6 +26,7 @@ void SaveAll(PipeMap& pipes, CSMap& stations) {
 	}
 	ofstream fout;
 	fout.open(file_name, ios::out);
+
 	fout << "Pipes:\n";
 	if (pipes.getLastId() != 1) {
 		fout << to_string(pipes.getLastId()) + "\n";
@@ -34,6 +35,7 @@ void SaveAll(PipeMap& pipes, CSMap& stations) {
 	{
 		pipes.saveElements(fout);
 	}
+
 	fout << "CompressStations:\n";
 	if (stations.getLastId() != 1) {
 		fout << to_string(stations.getLastId()) + "\n";
@@ -42,11 +44,21 @@ void SaveAll(PipeMap& pipes, CSMap& stations) {
 	{
 		stations.saveElements(fout);
 	}
+
+	fout << "OilNetworks:\n";
+	if (stations.getLastId() != 1) {
+		fout << to_string(networks.getLastId()) + "\n";
+	}
+	if (fout.is_open())
+	{
+		networks.saveMap(fout);
+	}
+
 	fout.close();
 	WriteLog("User saved to file", file_name);
 }
 
-void LoadAll(PipeMap& pipes, CSMap& stations) {
+void LoadAll(PipeMap& pipes, CSMap& stations, NetworkMap& networks) {
 	string file_name;
 	ifstream fin;
 	cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -64,6 +76,8 @@ void LoadAll(PipeMap& pipes, CSMap& stations) {
 	if (fin.is_open()) {
 		pipes.loadElements(fin, pipes);
 		stations.loadElements(fin, stations);
+		networks.loadMap(fin, networks);
+
 	}
 	fin.close();
 	WriteLog("User loaded from file", file_name);

@@ -41,11 +41,11 @@ void Connect(CSMap& stations, PipeMap& pipes, NetworkMap& network) {
 	while (true) {
 		cout << "Type pipe diameter: ";
 		getline(cin, pipe_dtr);
-		if (is_number(pipe_dtr)) {
+		if (is_number(pipe_dtr) and stoi(pipe_dtr) > 0) {
 			break;
 		}
 		else {
-			cout << "Invalid input. Please enter an integer." << endl;
+			cout << "Invalid input. Please enter a positive integer." << endl;
 		}
 	}
 
@@ -88,4 +88,67 @@ void Connect(CSMap& stations, PipeMap& pipes, NetworkMap& network) {
 		network_id = network.getLastId();
 		network.addToMap(network_id, stoi(enter_cs_id), stoi(exit_cs_id), pipe_id);
 	}
+}
+
+void makeTopSort(NetworkMap& networks) {
+	string network_id;
+	cin.clear();
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	while (true) {
+		cout << "Enter network id: ";
+		getline(cin, network_id);
+		if (is_number(network_id)) {
+			break;
+		}
+		else {
+			cout << "Invalid input. Please enter an integer." << endl;
+		}
+	}
+
+	auto it = networks.find(stoi(network_id));
+
+	if (it != networks.end()) {
+		networks.topSort(stoi(network_id));
+	}
+	else {
+		std::cerr << "Pipe with id " << network_id << " not found." << std::endl;
+		return;
+	}
+}
+
+void deleteEdge(NetworkMap& networks) {
+	string net_id;
+	cin.clear();
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	while (true) {
+		cout << "Enter network id: ";
+
+		getline(cin, net_id);
+		if (is_number(net_id)) {
+			if (networks.find(stoi(net_id)) != networks.end()) {
+				break;
+			}
+			else {
+				cout << "Network with id " << net_id << " not found!" << endl;
+			}
+		}
+		else {
+			cout << "Invalid input. Please enter an integer." << endl;
+		}
+	}
+
+	string id;
+	while (true) {
+		cout << "Enter pipe id: ";
+		getline(cin, id);
+		if (is_digit(id)) {
+			break;
+		}
+		else {
+			cout << "Invalid input. Please enter an integer." << endl;
+		}
+	}
+
+	networks.delEdge(stoi(net_id), stoi(id));
+
 }
