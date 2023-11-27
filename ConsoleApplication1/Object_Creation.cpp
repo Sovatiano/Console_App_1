@@ -4,8 +4,10 @@ Pipe CreatePipe(string diameter)
 {
 	string name;
 	string length;
+	string u_diameter;
 
 	cout << "Enter pipe name: ";
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 	getline(cin, name);
 
 	while (true) {
@@ -20,11 +22,10 @@ Pipe CreatePipe(string diameter)
 	}
 
 	if (diameter == "0") {
-		string diameter;
 		while (true) {
 			cout << "Enter pipe diameter: ";
-			getline(cin, diameter);
-			if (is_number(diameter) && stoi(diameter) > 0) {
+			getline(cin, u_diameter);
+			if (is_number(u_diameter) && stoi(u_diameter) > 0) {
 				break;
 			}
 			else {
@@ -36,7 +37,12 @@ Pipe CreatePipe(string diameter)
 	Pipe newPipe;
 	newPipe.setName(name);
 	newPipe.setLength(stod(length));
-	newPipe.setDiameter(stoi(diameter));
+	if (diameter == "0") {
+		newPipe.setDiameter(stoi(u_diameter));
+	}
+	else {
+		newPipe.setDiameter(stoi(diameter));
+	}
 	return newPipe;
 }
 

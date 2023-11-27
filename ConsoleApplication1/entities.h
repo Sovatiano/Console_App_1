@@ -8,6 +8,8 @@
 #include <ctime>
 #include <map>
 #include <unordered_map>
+#include <stack>
+#include <unordered_set>
 using namespace std;
 
 
@@ -129,6 +131,7 @@ public:
 
 	void addEdge(int v1, int v2, int edge) {
 		adjMatrix[v1].push_back(v2);
+		adjMatrix[v2];
 		edgeAdjMatrix[edge].push_back(v1);
 		edgeAdjMatrix[edge].push_back(v2);
 	}
@@ -143,6 +146,33 @@ public:
 
 	auto getEdgeMat() {
 		return edgeAdjMatrix;
+	}
+
+	void deleteEdge(int id) {
+		auto it = edgeAdjMatrix.find(id);
+
+		if (it != edgeAdjMatrix.end()) {
+			int v1 = edgeAdjMatrix[id][0];
+			int v2 = edgeAdjMatrix[id][1];
+			vector<int>& con = adjMatrix[v1];
+			auto i = find(begin(con), end(con), v2);
+			con.erase(i);
+			edgeAdjMatrix.erase(id);
+			for (auto& pair : adjMatrix) {
+				for (auto& con : edgeAdjMatrix) {
+					if (pair.first == con.second[0] or pair.first == con.second[1]) {
+						return;
+					}
+				}
+				adjMatrix.erase(pair.first);
+				return;
+			}
+
+		}
+		else {
+			std::cerr << "Pipe with id " << id << " not found." << std::endl;
+			return;
+		}
 	}
 
 	bool ifEdgeExists(int edge) {
@@ -191,6 +221,99 @@ public:
 		}
 	}
 
+	void saveEdge(ofstream& fout) {
+		for (auto& pair : edgeAdjMatrix) {
+			fout << pair.first << "\n"
+				<< pair.second[0] << "\n"
+				<< pair.second[1] << "\n";
+		}
+	}
+
+	void loadEdge(ifstream& fin) {
+		string edge_num;
+		getline(fin, edge_num);
+
+		for (int s = 0; s < stoi(edge_num); s++) {
+			string id, v1, v2;
+			getline(fin, id);
+			getline(fin, v1);
+			getline(fin, v2);
+			addEdge(stoi(v1), stoi(v2), stoi(id));
+		}
+	}
+
+	void topologicalSortUtil(int v, map<int, bool>& visited, stack<int>& stack) {
+		visited[v] = true;
+		for (int neighbor : adjMatrix[v]) {
+			if (!visited[neighbor]) {
+				topologicalSortUtil(neighbor, visited, stack);
+			}
+		}
+		stack.push(v);
+	}
+
+	void topologicalSort() {
+
+		if (isCyclic()) {
+			cout << "Network contains a cycle. Topological sorting is not possible.\n\n";
+			return;
+		}
+		stack<int> stack;
+		map<int, bool> visited;
+		for (auto& pair : adjMatrix) {
+			visited[pair.first] = false;
+		}
+
+		for (auto& pair : adjMatrix) {
+			if (!visited[pair.first]) {
+				topologicalSortUtil(pair.first, visited, stack);
+			}
+		}
+
+		cout << "Topological sorted network:\n";
+		while (!stack.empty()) {
+			cout << stack.top() << " ";
+			stack.pop();
+		}
+
+		cout << "\n\n";
+	}
+
+	bool isCyclicUtil(int v, unordered_set<int>& visited, unordered_set<int>& recStack) {
+		visited.insert(v);
+		recStack.insert(v);
+
+		for (const auto& neighbor : adjMatrix[v]) {
+			if (visited.find(neighbor) == visited.end()) {
+				if (isCyclicUtil(neighbor, visited, recStack)) {
+					return true;
+				}
+			}
+			else if (recStack.find(neighbor) != recStack.end()) {
+				return true;
+			}
+		}
+
+		recStack.erase(v);
+		return false;
+	}
+
+	bool isCyclic() {
+		unordered_set<int> visited;
+		unordered_set<int> recStack;
+
+		for (const auto& pair : adjMatrix) {
+			int v = pair.first;
+			if (visited.find(v) == visited.end()) {
+				if (isCyclicUtil(v, visited, recStack)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 private:
 	unordered_map<int, vector<int>> adjMatrix;
 	unordered_map<int, vector<int>> edgeAdjMatrix;
@@ -205,6 +328,10 @@ public:
 
 	void removeElement(int key) {
 		myMap.erase(key);
+	}
+
+	OilNetwork returnElem(int id) {
+		return myMap[id];
 	}
 
 	void clear() {
@@ -235,10 +362,11 @@ public:
 	}
 
 	void printElems() {
+		cout << "Oil Networks:\n\n";
 		for (auto& pair : myMap) {
-			cout << pair.first << "\n\n";
+			cout << "Oil Network id: " << pair.first << "\n\n";
 			pair.second.printTable();
-			cout << "\n\n";
+			cout << "\n----------------\n";
 		}
 	}
 
@@ -256,8 +384,12 @@ public:
 		if (id2 == 0) {
 			myMap[id].addEdge(v1, v2, edge);
 		}
-		else {
+		else if (id != id2) {
 			combineNets(id, id2);
+			myMap[id].addEdge(v1, v2, edge);
+		}
+
+		else {
 			myMap[id].addEdge(v1, v2, edge);
 		}
 	}
@@ -267,7 +399,55 @@ public:
 			myMap[id1].addEdge(rows.second[0], rows.second[1], rows.first);
 		}
 		myMap.erase(id2);
+		currentKey -= 1;
 	}
+
+	void saveMap(ofstream& fout) {
+		for (auto& pair : myMap) {
+			fout << pair.first << "\n"
+				<< pair.second.getEdgeMat().size() << "\n";
+			pair.second.saveEdge(fout);
+		}
+
+	}
+
+	void loadMap(ifstream& fin, NetworkMap& networks) {
+		string str;
+		getline(fin, str);
+		if (str == "") {
+			return;
+		}
+
+		else {
+			networks.setLastId(stoi(str));
+			for (int i = 1; i < stoi(str); i++) {
+				string id;
+				getline(fin, id);
+				myMap[stoi(id)].loadEdge(fin);
+			}
+		}
+	}
+
+	void topSort(int id) {
+		myMap[id].topologicalSort();
+	}
+
+	void delEdge(int n_id, int p_id) {
+		myMap[n_id].deleteEdge(p_id);
+	}
+
+	map<int, OilNetwork>::iterator find(int key) {
+		return myMap.find(key);
+	}
+
+	map<int, OilNetwork>::iterator end() {
+		return myMap.end();
+	}
+
+	map<int, OilNetwork>::iterator begin() {
+		return myMap.begin();
+	}
+
 private:
 	map<int, OilNetwork> myMap;
 	int currentKey = 1;
@@ -288,8 +468,14 @@ public:
 		myMap[newKey] = value;
 	}
 
-	void removeElement(int key) {
+	void removeElement(int key, NetworkMap& networks) {
 		myMap.erase(key);
+		for (auto& pair : networks) {
+			for (auto& edges : pair.second.getEdgeMat() )
+				if (edges.first == key) {
+					pair.second.deleteEdge(key);
+				}
+		}
 	}
 
 	void clear() {
@@ -484,7 +670,7 @@ public:
 	}
 
 	int getLastId() {
-		return currentKey + 1;
+		return currentKey;
 	}
 
 	void setLastId(int id) {
@@ -592,13 +778,13 @@ public:
 	void loadElements(ifstream& fin, CSMap& stations) const {
 		string str;
 		getline(fin, str);
-		if (str != "")
+		if (str != "OilNetworks:")
 		{
 			stations.setLastId(stoi(str));
 			while (true)
 			{
 				getline(fin, str);
-				if (str == "") {
+				if (str == "OilNetworks:") {
 					break;
 				}
 				Compress_station new_cs;
@@ -643,7 +829,7 @@ Compress_station CreateCS();
 
 void EditCS(CSMap& stations);
 
-void Delete(PipeMap& pipes, CSMap& stations);
+void Delete(PipeMap& pipes, CSMap& stations, NetworkMap& networks);
 
 void ChangePipeStatus(PipeMap& pipes, int pipe_id, bool solo_edit);
 
@@ -655,8 +841,12 @@ void Search(PipeMap& pipes, CSMap& stations);
 
 void WriteLog(string action, string obj_name);
 
-void SaveAll(PipeMap& pipes, CSMap& stations);
+void SaveAll(PipeMap& pipes, CSMap& stations, NetworkMap& networks);
 
-void LoadAll(PipeMap& pipes, CSMap& stations);
+void LoadAll(PipeMap& pipes, CSMap& stations, NetworkMap& networks);
 
 void Connect(CSMap& stations, PipeMap& pipes, NetworkMap& network);
+
+void makeTopSort(NetworkMap& networks);
+
+void deleteEdge(NetworkMap& networks);
